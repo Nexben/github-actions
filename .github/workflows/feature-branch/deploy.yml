@@ -1,0 +1,174 @@
+name: Feature branch Deploy
+
+on:
+  workflow_call:
+    inputs:
+      branch_name:
+        description: 'name branch to deploy'
+        required: true
+        type: string
+    secrets:
+      tf_api_token:
+        description: 'trerraform access token'
+        required: true
+        type: string
+
+
+
+env:
+  TF_IN_AUTOMATION: "1"
+  TF_INPUT: "0"
+
+jobs:
+  vars:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      app_release: ${{ steps.vars.outputs.app_release }}
+      ref_slug: ${{ steps.vars.outputs.ref_slug }}
+      param_space: ${{ steps.vars.outputs.param_space }}
+      app_branch: ${{ steps.vars.outputs.app_branch }}
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set vars
+        id: vars
+        run: |
+
+          APP_RELEASE="dev"
+
+          if [ "${{ github.ref }}" = 'refs/heads/master' ]; then
+            APP_BRANCH="dev"
+            PARAM_SPACE="dev"
+          elif [ "${{ github.ref }}" = 'refs/heads/iac' ]; then
+            APP_BRANCH="dev"
+            PARAM_SPACE="dev"
+          else
+            APP_BRANCH="dev"
+            PARAM_SPACE="dev"
+          fi
+
+          APP_BRANCH=${{ inputs.branch_name }}
+
+          echo "APP_RELEASE=$APP_RELEASE"
+          echo "REF_SLUG=$REF_SLUG"
+          echo "APP_BRANCH=$APP_BRANCH"
+          echo "::set-output name=app_release::$APP_RELEASE"
+          echo "::set-output name=ref_slug::$REF_SLUG"
+          echo "::set-output name=app_branch::$APP_BRANCH"
+          echo "::set-output name=param_space::$PARAM_SPACE"
+
+  check-terraform:
+    runs-on: ubuntu-latest
+
+    needs: [ vars ]
+    env:
+      TF_VAR_app_release:  ${{ needs.vars.outputs.app_release }}
+      TF_VAR_tag:          ${{ needs.vars.outputs.app_release }}
+      TF_VAR_app_branch:   ${{ needs.vars.outputs.app_branch }}
+      TF_VAR_param_space:  ${{ needs.vars.outputs.param_space }}
+      TF_WORKSPACE: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.tf_api_token }}
+          terraform_wrapper: false
+          terraform_version: "~1.0"
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: iac
+
+      - name: Cache Terraform
+        uses: actions/cache@v2
+        with:
+          path: iac/.terraform
+          key: ${{ hashFiles('iac/.terraform.lock.hcl') }}
+
+      - name: Terraform Init
+        run: |
+          echo  "tag          =\"$TF_VAR_tag\""  >  terraform.auto.tfvars
+          echo  "app_release  =\"$TF_VAR_tag\""  >>  terraform.auto.tfvars
+          echo  "app_branch  =\"$TF_VAR_app_branch\""  >>  terraform.auto.tfvars
+          echo  "param_space  =\"$TF_VAR_param_space\""  >>  terraform.auto.tfvars
+          terraform init -migrate-state
+          unset TF_WORKSPACE
+          terraform workspace select dev
+          terraform workspace select $TF_VAR_app_branch || terraform workspace new $TF_VAR_app_branch
+          terraform init
+
+
+        working-directory: iac
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: iac
+
+  terraform:
+    runs-on: ubuntu-latest
+    needs: [vars, check-terraform]
+    env:
+      TF_VAR_app_release: ${{ needs.vars.outputs.app_release }}
+      TF_VAR_tag: ${{ needs.vars.outputs.app_release }}
+      TF_VAR_app_branch: ${{ needs.vars.outputs.app_branch }}
+      TF_VAR_param_space: ${{ needs.vars.outputs.param_space }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: check
+        run: |
+          echo "TF_VAR_tag=$TF_VAR_tag"
+          echo "TF_VAR_app_branch=$TF_VAR_app_branch"
+          env
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_wrapper: false
+          terraform_version: "~1.0"
+
+      - name: Cache Terraform
+        uses: actions/cache@v2
+        with:
+          path: iac/.terraform
+          key: ${{ hashFiles('iac/.terraform.lock.hcl') }}
+
+      - name: Terraform Init
+        run: |
+          echo  "tag          =\"$TF_VAR_tag\""  >  terraform.auto.tfvars
+          echo  "app_release  =\"$TF_VAR_tag\""  >>  terraform.auto.tfvars
+          echo  "app_branch  =\"$TF_VAR_app_branch\""  >>  terraform.auto.tfvars
+          echo  "param_space  =\"$TF_VAR_param_space\""  >>  terraform.auto.tfvars
+          terraform workspace select $TF_VAR_app_branch || terraform workspace new $TF_VAR_app_branch
+          terraform init
+        working-directory: iac
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: iac
+
+  slack:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [vars, terraform]
+    env:
+      SLACK_CHANNEL: "#ci-cd"
+      SLACK_USER: "${{ github.repository }}[${{ needs.vars.outputs.app_branch }}]"
+    steps:
+      - name: Notify Deployed
+        if: needs.terraform.result == 'success'
+        run: |
+          curl -fsS \
+            -X POST \
+            -H 'content-type: application/json' \
+             "${{ secrets.SLACK_NOTIFY_WEBHOOK }}" \
+            -d '{"channel": "'"$SLACK_CHANNEL"'", "username": "'"$SLACK_USER"'", "text": "New feature deployed ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>\nTriggered by: @${{ github.actor }}", "icon_emoji": ":up:"}'
