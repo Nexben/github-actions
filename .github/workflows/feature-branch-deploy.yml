@@ -68,7 +68,7 @@ jobs:
           echo "REF_SLUG=$REF_SLUG"
           echo "APP_BRANCH=$APP_BRANCH"
 
-          echo "::set-output name=app_release::$APP_RELEASE"
+          echo "::set-output name=tag::$APP_RELEASE"
           echo "::set-output name=tf_workspace::$TF_WORKSPACE"
           echo "::set-output name=ref_slug::$REF_SLUG"
           echo "::set-output name=app_branch::$APP_BRANCH"
