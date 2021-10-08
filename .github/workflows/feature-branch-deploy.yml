@@ -13,8 +13,11 @@ on:
         required: true
         type: string
 
-runs:
-    using: "composite"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       TF_VAR_app_release:  ${{ needs.vars.outputs.app_release }}
       TF_VAR_tag:          ${{ needs.vars.outputs.app_release }}
