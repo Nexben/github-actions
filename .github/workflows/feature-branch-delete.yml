@@ -56,7 +56,7 @@ jobs:
           echo "REF_SLUG=$REF_SLUG"
           echo "APP_BRANCH=$APP_BRANCH"
 
-          echo "::set-output name=app_release::$APP_RELEASE"
+          echo "::set-output name=tag::$APP_RELEASE"
           echo "::set-output name=ref_slug::$REF_SLUG"
           echo "::set-output name=app_branch::$APP_BRANCH"
           echo "::set-output name=param_space::$PARAM_SPACE"
@@ -73,7 +73,7 @@ jobs:
 
       - name: Terraform Apply
         env:
-          TF_VAR_tag:          ${{ needs.vars.outputs.app_release }}
+          TF_VAR_tag:          ${{ needs.vars.outputs.tag }}
           TF_VAR_app_branch:   ${{ needs.vars.outputs.app_branch }}
           TF_VAR_param_space:  ${{ needs.vars.outputs.param_space }}
 
