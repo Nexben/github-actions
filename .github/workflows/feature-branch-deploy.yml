@@ -95,6 +95,7 @@ jobs:
         run: |
           echo "TF_VAR_tag=${{steps.vars.outputs.tag}}"
           echo "TF_VAR_app_branch=${{steps.vars.outputs.app_branch}}"
+          TF_WORKSPACE="${{steps.vars.outputs.app_branch}}"
           env
 
       - name: Terraform Apply
