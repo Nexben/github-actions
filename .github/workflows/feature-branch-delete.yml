@@ -80,6 +80,6 @@ jobs:
         run: |
           terraform apply -destroy  -auto-approve
           terraform workspace select dev
-          terraform workspace delete -force $TF_VAR_app_branch
+          terraform workspace delete -force ${{steps.vars.outputs.app_branch}}
 
         working-directory: iac
