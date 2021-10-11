@@ -65,9 +65,9 @@ jobs:
         run: |
           echo  "tag          =\"${{steps.vars.outputs.tag}}\""  >  terraform.auto.tfvars
           echo  "app_release  =\"${{steps.vars.outputs.tag}}\""  >>  terraform.auto.tfvars
-          echo  "app_branch  =\"${{steps.vars.outputs.app_branch}}\""  >>  terraform.auto.tfvars
+          echo  "app_branch   =\"${{steps.vars.outputs.app_branch}}\""  >>  terraform.auto.tfvars
           echo  "param_space  =\"${{steps.vars.outputs.param_space}}\""  >>  terraform.auto.tfvars
-          terraform workspace select $TF_VAR_app_branch
+          terraform workspace select ${{steps.vars.outputs.app_branch}}
           terraform init
         working-directory: iac
 
