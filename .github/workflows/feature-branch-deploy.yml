@@ -99,6 +99,9 @@ jobs:
           env
 
       - name: Terraform Apply
+        env:
+          TF_WORKSPACE="${{steps.vars.outputs.app_branch}}"
+
         run: terraform apply -auto-approve
         working-directory: iac
 
