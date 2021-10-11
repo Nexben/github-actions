@@ -24,7 +24,6 @@ jobs:
     outputs:
       app_release: ${{ steps.vars.outputs.app_release }}
       ref_slug: ${{ steps.vars.outputs.ref_slug }}
-      tf_workspace: ${{ steps.vars.outputs.tf_workspace }}
       param_space: ${{ steps.vars.outputs.param_space }}
       app_branch: ${{ steps.vars.outputs.app_branch }}
 
@@ -45,14 +44,11 @@ jobs:
           PARAM_SPACE="dev"
 
           APP_BRANCH=${{ inputs.branch_name }}
-          TF_WORKSPACE=$APP_BRANCH
 
           echo "APP_RELEASE=$APP_RELEASE"
-          echo "TF_WORKSPACE=$TF_WORKSPACE"
           echo "REF_SLUG=$REF_SLUG"
           echo "APP_BRANCH=$APP_BRANCH"
           echo "::set-output name=app_release::$APP_RELEASE"
-          echo "::set-output name=tf_workspace::$TF_WORKSPACE"
           echo "::set-output name=ref_slug::$REF_SLUG"
           echo "::set-output name=app_branch::$APP_BRANCH"
           echo "::set-output name=param_space::$PARAM_SPACE"
@@ -61,7 +57,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ vars ]
     env:
-      TF_VAR_app_release:  ${{ needs.vars.outputs.app_release }}
       TF_VAR_tag:          ${{ needs.vars.outputs.app_release }}
       TF_VAR_app_branch:   ${{ needs.vars.outputs.app_branch }}
       TF_VAR_param_space:  ${{ needs.vars.outputs.param_space }}
@@ -88,16 +83,18 @@ jobs:
 
       - name: Terraform Init
         run: |
-          export TF_IN_AUTOMATION=true
           echo  "tag          =\"$TF_VAR_tag\""  >  terraform.auto.tfvars
           echo  "app_release  =\"$TF_VAR_tag\""  >>  terraform.auto.tfvars
-          echo  "app_branch  =\"$TF_VAR_app_branch\""  >>  terraform.auto.tfvars
+          echo  "app_branch   =\"$TF_VAR_app_branch\""  >>  terraform.auto.tfvars
           echo  "param_space  =\"$TF_VAR_param_space\""  >>  terraform.auto.tfvars
           terraform workspace select $TF_VAR_app_branch
           terraform init
         working-directory: iac
 
       - name: Terraform Apply
+        env:
+          TF_VAR_app_branch: ${{steps.vars.outputs.app_branch}}
+
         run: |
           terraform apply -destroy  -auto-approve
           terraform workspace select dev

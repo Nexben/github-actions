@@ -91,16 +91,11 @@ jobs:
         run: terraform validate
         working-directory: iac
 
-      - name: check
-        run: |
-          echo "TF_VAR_tag=${{steps.vars.outputs.tag}}"
-          echo "TF_VAR_app_branch=${{steps.vars.outputs.app_branch}}"
-          TF_WORKSPACE="${{steps.vars.outputs.app_branch}}"
-          env
-
       - name: Terraform Apply
         env:
           TF_WORKSPACE: ${{steps.vars.outputs.app_branch}}
+          TF_VAR_app_branch: ${{steps.vars.outputs.app_branch}}
+          TF_VAR_tag: ${{steps.vars.outputs.tag}}
 
         run: terraform apply -auto-approve
         working-directory: iac
