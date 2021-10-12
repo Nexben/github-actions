@@ -18,10 +18,6 @@ jobs:
     permissions:
       contents: read
     env:
-#      TF_VAR_app_release:  ${{ needs.vars.outputs.app_release }}
-#      TF_VAR_tag:          ${{ needs.vars.outputs.app_release }}
-#      TF_VAR_app_branch:   ${{ needs.vars.outputs.app_branch }}
-#      TF_VAR_param_space:  ${{ needs.vars.outputs.param_space }}
       TF_WORKSPACE: dev
 
     steps:
