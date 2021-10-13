@@ -16,12 +16,6 @@ on:
         default: 'dev'
         required: false
         type: string
-      github_run_id:
-        required: false
-        type: string
-      github_actor:
-        required: false
-        type: string
     secrets:
       tf_api_token:
         description: 'trerraform access token'
@@ -64,19 +58,15 @@ jobs:
         run: |
 
           APP_RELEASE=${{ inputs.tag_name }}
+          APP_BRANCH=${{ inputs.branch_name }}
+          PARAM_SPACE="dev"
 
-          if [ "${{ github.ref }}" = 'refs/heads/master' ]; then
-            APP_BRANCH="dev"
+          if [ APP_BRANCH = 'stage' ]; then
             PARAM_SPACE="dev"
-          elif [ "${{ github.ref }}" = 'refs/heads/iac' ]; then
-            APP_BRANCH="dev"
-            PARAM_SPACE="dev"
-          else
-            APP_BRANCH="dev"
+          elif [ APP_BRANCH = 'master' ]; then
             PARAM_SPACE="dev"
           fi
 
-          APP_BRANCH=${{ inputs.branch_name }}
 
           echo "APP_RELEASE=$APP_RELEASE"
           echo "REF_SLUG=$REF_SLUG"
@@ -122,5 +112,5 @@ jobs:
             -X POST \
             -H 'content-type: application/json' \
              "${{secrets.slack_webhook}}" \
-            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deployed ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/runs/${{ inputs.github_run_id }}>\nTriggered by: @${{ inputs.github_actor }}", "icon_emoji": ":triangular_flag_on_post:"}'
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deployed ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
 

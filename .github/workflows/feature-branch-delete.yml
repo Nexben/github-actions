@@ -11,12 +11,6 @@ on:
         description: 'name branch to delete'
         required: true
         type: string
-      github_run_id:
-        required: false
-        type: string
-      github_actor:
-        required: false
-        type: string
     secrets:
       tf_api_token:
         description: 'trerraform access token'
@@ -106,4 +100,4 @@ jobs:
             -X POST \
             -H 'content-type: application/json' \
              "${{ secrets.slack_webhook }}" \
-            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deleted ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/runs/${{ inputs.github_run_id }}>\nTriggered by: @${{ inputs.github_actor }}", "icon_emoji": ":recycle:"}'
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deleted ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":recycle:"}'
