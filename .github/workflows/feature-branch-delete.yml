@@ -3,14 +3,27 @@ name: Feature branch Delete
 on:
   workflow_call:
     inputs:
+      repository_name:
+        description: 'caller repository name'
+        required: false
+        type: string
       branch_name:
         description: 'name branch to delete'
         required: true
+        type: string
+      github_run_id:
+        required: false
+        type: string
+      github_actor:
+        required: false
         type: string
     secrets:
       tf_api_token:
         description: 'trerraform access token'
         required: true
+      slack_webhook:
+        description: 'slack webhook url'
+        required: false
 
 env:
   TF_IN_AUTOMATION: "1"
@@ -83,3 +96,14 @@ jobs:
           terraform workspace delete -force ${{steps.vars.outputs.app_branch}}
 
         working-directory: iac
+
+      - name: Slack Notification
+        if: ${{secrets.slack_webhook}}
+        env:
+          SLACK_USER: "${{ inputs.repository_name }}[${{ needs.vars.outputs.app_branch }}]"
+        run: |
+          curl -fsS \
+            -X POST \
+            -H 'content-type: application/json' \
+             "${{ secrets.slack_webhook }}" \
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deleted ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/runs/${{ inputs.github_run_id }}>\nTriggered by: @${{ inputs.github_actor }}", "icon_emoji": ":recycle:"}'

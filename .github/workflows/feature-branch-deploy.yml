@@ -3,14 +3,32 @@ name: Feature branch Deploy
 on:
   workflow_call:
     inputs:
+      repository_name:
+        description: 'caller repository name'
+        required: false
+        type: string
       branch_name:
         description: 'name branch to deploy'
         required: true
+        type: string
+      tag_name:
+        description: 'name tag to deploy'
+        default: 'dev'
+        required: false
+        type: string
+      github_run_id:
+        required: false
+        type: string
+      github_actor:
+        required: false
         type: string
     secrets:
       tf_api_token:
         description: 'trerraform access token'
         required: true
+      slack_webhook:
+        description: 'slack webhook url'
+        required: false
 
 jobs:
   deploy:
@@ -45,7 +63,7 @@ jobs:
         id: vars
         run: |
 
-          APP_RELEASE="dev"
+          APP_RELEASE=${{ inputs.tag_name }}
 
           if [ "${{ github.ref }}" = 'refs/heads/master' ]; then
             APP_BRANCH="dev"
@@ -94,4 +112,15 @@ jobs:
 
         run: terraform apply -auto-approve
         working-directory: iac
+
+      - name: Slack Notification
+        if: ${{secrets.slack_webhook}}
+        env:
+          SLACK_USER: "${{ github.repository }}[${{ needs.vars.outputs.app_branch }}]"
+        run: |
+          curl -fsS \
+            -X POST \
+            -H 'content-type: application/json' \
+             "${{secrets.slack_webhook}}" \
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deployed ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/runs/${{ inputs.github_run_id }}>\nTriggered by: @${{ inputs.github_actor }}", "icon_emoji": ":triangular_flag_on_post:"}'
 
