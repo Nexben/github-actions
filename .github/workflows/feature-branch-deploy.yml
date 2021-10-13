@@ -105,7 +105,7 @@ jobs:
 
       - name: Slack Notification
         env:
-          SLACK_USER: "${{ github.repository }}[${{ needs.vars.outputs.app_branch }}]"
+          SLACK_USER: "${{ github.repository }}[${{ steps.vars.outputs.app_branch }}]"
         run: |
           curl -fsS \
             -X POST \
