@@ -104,7 +104,6 @@ jobs:
         working-directory: iac
 
       - name: Slack Notification
-        if: ${{secrets.slack_webhook}}
         env:
           SLACK_USER: "${{ github.repository }}[${{ needs.vars.outputs.app_branch }}]"
         run: |
