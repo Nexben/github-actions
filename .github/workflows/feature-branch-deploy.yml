@@ -37,22 +37,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: check if we have same feature branch
-        id: test
-        run: |
-            APP_BRANCH="master"
-            exists=`git show-ref refs/heads/${{ inputs.branch_name }}`
-            if [ -n "$exists" ]; then
-              echo "found feature branch"
-              APP_BRANCH="${{ inputs.branch_name }}"
-            fi
-            echo "::set-output name=app_branch::$APP_BRANCH"
-
-      - name: Checkout branch
-        uses: actions/checkout@v2
-        with:
-          ref:  ${{steps.test.outputs.app_branch}}
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -84,6 +68,15 @@ jobs:
             PARAM_SPACE="dev"
           fi
 
+
+          APP_BRANCH="master"
+
+          exists=`git show-ref refs/heads/feature/${{ inputs.branch_name }}`
+          if [ -n "$exists" ]; then
+            echo "found feature branch"
+            APP_BRANCH="${{ inputs.branch_name }}"
+            APP_RELEASE="${{ inputs.branch_name }}"
+          fi
 
           echo "APP_RELEASE=$APP_RELEASE"
           echo "REF_SLUG=$REF_SLUG"
