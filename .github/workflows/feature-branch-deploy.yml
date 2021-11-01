@@ -39,10 +39,10 @@ jobs:
         id: test
         run: |
             APP_BRANCH="master"
-            exists=`git show-ref refs/heads/feature/${{ inputs.branch_name }}`
+            exists=`git show-ref refs/heads/${{ inputs.branch_name }}`
             if [ -n "$exists" ]; then
               echo "found feature branch"
-              APP_BRANCH="feature/${{ inputs.branch_name }}"
+              APP_BRANCH="${{ inputs.branch_name }}"
             fi
             echo "::set-output name=app_branch::$APP_BRANCH"
 
