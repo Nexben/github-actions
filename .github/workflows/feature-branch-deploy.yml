@@ -73,17 +73,15 @@ jobs:
 
           exists=`git show-ref refs/heads/feature/${{ inputs.branch_name }}`
           if [ -n "$exists" ]; then
-            echo "found feature branch"
+            echo "found feature branch $exists"
             APP_BRANCH="${{ inputs.branch_name }}"
             APP_RELEASE="${{ inputs.branch_name }}"
           fi
 
           echo "APP_RELEASE=$APP_RELEASE"
-          echo "REF_SLUG=$REF_SLUG"
           echo "APP_BRANCH=$APP_BRANCH"
 
           echo "::set-output name=tag::$APP_RELEASE"
-          echo "::set-output name=ref_slug::$REF_SLUG"
           echo "::set-output name=app_branch::$APP_BRANCH"
           echo "::set-output name=param_space::$PARAM_SPACE"
 
