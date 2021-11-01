@@ -57,6 +57,7 @@ jobs:
       - name: Set vars
         id: vars
         run: |
+          set -x
 
           APP_RELEASE=${{ inputs.tag_name }}
           APP_BRANCH=${{ inputs.branch_name }}
