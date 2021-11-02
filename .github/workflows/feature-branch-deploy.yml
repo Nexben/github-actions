@@ -41,14 +41,13 @@ jobs:
         id: test
         run: |
           set -x
+
           APP_TAG="master"
-
-          branch=`git show-ref refs/heads/feature/${{ inputs.branch_name }}`;
-
-          if [ -n "$branch" ]; then
-            echo "found feature branch $branch"
-            APP_TAG="${{ inputs.branch_name }}"
+          branch_name=$(git show-ref refs/heads/feature/${{ inputs.branch_name }});
+          if [ -n "$branch_name" ]; then
+            APP_TAG=${{ inputs.branch_name }}
           fi
+
           echo "APP_TAG=$APP_TAG"
           echo "::set-output name=tag::$APP_TAG"
 
