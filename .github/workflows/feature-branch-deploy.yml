@@ -55,6 +55,7 @@ jobs:
           key: ${{ hashFiles('iac/.terraform.lock.hcl') }}
 
       - name: Set vars
+        uses: actions/checkout@v2
         id: vars
         run: |
           set -x
