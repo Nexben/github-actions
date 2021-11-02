@@ -36,13 +36,16 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Check branch
         id: test
         run: |
           set -x
-          git status
           APP_TAG="master"
+          echo "::set-output name=tag::$APP_TAG"
+
           branch_name=$(git show-ref refs/heads/feature/${{ inputs.branch_name }});
           if [ -n "$branch_name" ]; then
             APP_TAG=${{ inputs.branch_name }}
