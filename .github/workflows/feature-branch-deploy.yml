@@ -41,18 +41,14 @@ jobs:
 
       - name: Check branch
         id: test
+        continue-on-error: true
         run: |
-          set -x
           APP_TAG="master"
           echo "::set-output name=tag::$APP_TAG"
-
           branch_name=$(git show-ref feature/${{ inputs.branch_name }});
           if [ -n "$branch_name" ]; then
-            APP_TAG=${{ inputs.branch_name }}
+            echo "::set-output name=tag::$APP_TAG"
           fi
-
-          echo "APP_TAG=$APP_TAG"
-          echo "::set-output name=tag::$APP_TAG"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
