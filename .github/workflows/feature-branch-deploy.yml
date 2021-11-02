@@ -48,7 +48,6 @@ jobs:
             APP_TAG="${{ inputs.branch_name }}"
           fi
           echo "APP_TAG=$APP_TAG"
-          echo "::set-env name=tag::$APP_TAG"
           echo "::set-output name=tag::$APP_TAG"
 
       - name: Setup Terraform
