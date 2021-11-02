@@ -1,0 +1,59 @@
+name: Feature branch Deploy
+
+on:
+  workflow_call:
+    inputs:
+      branch_name:
+        description: 'name branch to deploy'
+        required: true
+        type: string
+    secrets:
+      tf_api_token:
+        description: 'trerraform access token'
+        required: true
+
+jobs:
+  vars:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+  - name: Set vars
+      id: vars
+      run: |
+        SHA_SHORT="$(git rev-parse --short HEAD)"
+
+        REF_SLUG="$(echo "${{ github.ref }}" | cut -d'/' -f3- | sed 's/[^a-z0-9_-]/__/gi')"
+
+        APP_RELEASE="$(echo ${REF_SLUG}-${SHA_SHORT}-${{ github.run_number }} | awk '{print tolower($0)}' )"
+
+        if [[ $APP_RELEASE = feature-* ]]; then
+          APP_BRANCH=$(echo  ${REF_SLUG#feature-} | awk '{gsub("[^a-zA-Z-]", "", $1);print tolower($0)};' )
+        fi
+
+        if [ "${{ github.ref }}" = 'refs/heads/master' ]; then
+          APP_BRANCH="dev"
+          PARAM_SPACE="dev"
+        elif [ "${{ github.ref }}" = 'refs/heads/iac' ]; then
+          APP_BRANCH="dev"
+          PARAM_SPACE="dev"
+        else
+          APP_BRANCH="dev"
+          PARAM_SPACE="dev"
+        fi
+
+        if [[ $APP_RELEASE = feature-* ]]; then
+          APP_BRANCH=$(echo  ${REF_SLUG#feature-} | awk '{gsub("[^a-zA-Z-]", "", $1);print tolower($0)};' )
+        fi
+
+
+        echo "APP_RELEASE=$APP_RELEASE"
+        echo "REF_SLUG=$REF_SLUG"
+        echo "APP_BRANCH=$APP_BRANCH"
+        echo "::set-output name=app_release::$APP_RELEASE"
+        echo "::set-output name=ref_slug::$REF_SLUG"
+        echo "::set-output name=app_branch::$APP_BRANCH"
+        echo "::set-output name=param_space::$PARAM_SPACE"
