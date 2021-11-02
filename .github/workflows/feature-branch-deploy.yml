@@ -43,9 +43,7 @@ jobs:
           set -x
           APP_TAG="master"
 
-          git show-ref refs/heads/feature/${{ inputs.branch_name }}
-
-          EXISTS=$(git show-ref refs/heads/feature/${{ inputs.branch_name }})
+          EXISTS="$(git show-ref refs/heads/feature/${{ inputs.branch_name }})"
           if [ -n "$EXISTS" ]; then
             echo "found feature branch $exists"
             APP_TAG="${{ inputs.branch_name }}"
