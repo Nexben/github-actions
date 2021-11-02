@@ -43,12 +43,12 @@ jobs:
           set -x
           APP_TAG="master"
 
-          EXISTS="$(git show-ref refs/heads/feature/${{ inputs.branch_name }})"
-          if [ -n "$EXISTS" ]; then
+          if [ -n "$(git show-ref refs/heads/feature/${{ inputs.branch_name }})" ]; then
             echo "found feature branch $exists"
             APP_TAG="${{ inputs.branch_name }}"
           fi
           echo "APP_TAG=$APP_TAG"
+          echo "::set-env name=tag::$APP_TAG"
           echo "::set-output name=tag::$APP_TAG"
 
       - name: Setup Terraform
