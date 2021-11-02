@@ -41,7 +41,7 @@ jobs:
         id: test
         run: |
           set -x
-
+          git status
           APP_TAG="master"
           branch_name=$(git show-ref refs/heads/feature/${{ inputs.branch_name }});
           if [ -n "$branch_name" ]; then
