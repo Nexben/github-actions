@@ -72,7 +72,7 @@ jobs:
 
           APP_BRANCH="master"
 
-          exists=`git show-ref refs/heads/feature/${{ inputs.branch_name }}`
+          exists=$(git show-ref refs/heads/feature/${{ inputs.branch_name }})
           if [ -n "$exists" ]; then
             echo "found feature branch $exists"
             APP_BRANCH="${{ inputs.branch_name }}"
