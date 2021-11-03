@@ -80,6 +80,10 @@ jobs:
             PARAM_SPACE="dev"
           fi
 
+          echo "APP_TAG     = ${{steps.test.outputs.tag}}"
+          echo "APP_BRANCH  = $APP_BRANCH"
+          echo "PARAM_SPACE = $PARAM_SPACE"
+
           echo "::set-output name=app_branch::$APP_BRANCH"
           echo "::set-output name=param_space::$PARAM_SPACE"
 
