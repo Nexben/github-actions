@@ -43,11 +43,10 @@ jobs:
         id: test
         continue-on-error: true
         run: |
-          APP_TAG="dev"
-          echo "::set-output name=tag::$APP_TAG"
+          echo "::set-output name=tag::dev"
           branch_name=$(git show-ref feature/${{ inputs.branch_name }});
           if [ -n "$branch_name" ]; then
-            echo "::set-output name=tag::$APP_TAG"
+            echo "::set-output name=tag::${{ inputs.branch_name }}"
           fi
 
       - name: Setup Terraform
