@@ -11,6 +11,11 @@ on:
         description: 'name branch to delete'
         required: true
         type: string
+      service_name:
+        description: 'service name'
+        required: true
+        type: string
+
     secrets:
       tf_api_token:
         description: 'trerraform access token'
@@ -18,6 +23,15 @@ on:
       slack_webhook:
         description: 'slack webhook url'
         required: false
+      aws_access_key_id:
+        description: 'aws access key id'
+        required: true
+      aws_secret_access_key:
+        description: 'aws secret access key'
+        required: true
+      aws_region:
+        description: 'aws region'
+        required: true
 
 env:
   TF_IN_AUTOMATION: "1"
