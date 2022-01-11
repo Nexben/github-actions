@@ -134,10 +134,13 @@ jobs:
 
       - name: Start Pipeline
         run: |
-          export AWS_TOOLS_PIPELINE_NAME="default-cicd-${{ inputs.service_name }}"
+          export AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
           export APP_TAG=aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value"
           export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $AWS_TOOLS_PIPELINE_NAME | jq -r ".pipelineExecutionId")
           echo "PIPELINE_EXECUTION_ID = $PIPELINE_EXECUTION_ID"
+          echo "AWS_TOOLS_PIPELINE_NAME = $AWS_TOOLS_PIPELINE_NAME"
+          echo "PIPELINE_IMAGE_TAG = $APP_TAG"
+          echo "PIPELINE_STAGE = ${{ inputs.branch_name }}"
           aws dynamodb put-item \
           --table-name ${{ secrets.AWS_TOOLS_PIPELINE_EXECUTIONS_TABLE_NAME }} \
           --item '{"pipelineExecutionId":{"S":"$PIPELINE_EXECUTION_ID"},"parameters":{"S":"{\"PIPELINE_STAGE\":\"${{ inputs.branch_name }}\",\"PIPELINE_IMAGE_TAG\":\"$APP_TAG\"}"}}'
