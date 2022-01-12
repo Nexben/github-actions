@@ -15,10 +15,6 @@ on:
         description: 'service name'
         required: true
         type: string
-      pipeline_table_name:
-        description: 'table to store pipeline info'
-        required: true
-        type: string
 
     secrets:
       tf_api_token:
@@ -35,6 +31,9 @@ on:
         required: true
       aws_region:
         description: 'aws region'
+        required: true
+      pipeline_table_name:
+        description: 'table to store pipeline info'
         required: true
 
 env:
