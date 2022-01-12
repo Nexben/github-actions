@@ -20,6 +20,10 @@ on:
         description: 'service name'
         required: true
         type: string
+      pipeline_table_name:
+        description: 'table to store pipeline info'
+        required: true
+        type: string
 
     secrets:
       tf_api_token:
@@ -153,7 +157,7 @@ jobs:
           echo "PIPELINE_IMAGE_TAG = $APP_TAG"
           echo "PIPELINE_STAGE = ${{ inputs.branch_name }}"
           aws dynamodb put-item \
-          --table-name ${{ secrets.AWS_TOOLS_PIPELINE_EXECUTIONS_TABLE_NAME }} \
+          --table-name ${{ inputs.pipeline_table_name }} \
           --item '{"pipelineExecutionId":{"S":"$PIPELINE_EXECUTION_ID"},"parameters":{"S":"{\"PIPELINE_STAGE\":\"${{ inputs.branch_name }}\",\"PIPELINE_IMAGE_TAG\":\"$APP_TAG\"}"}}'
 
   slack:

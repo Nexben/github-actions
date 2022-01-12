@@ -15,6 +15,10 @@ on:
         description: 'service name'
         required: true
         type: string
+      pipeline_table_name:
+        description: 'table to store pipeline info'
+        required: true
+        type: string
 
     secrets:
       tf_api_token:
