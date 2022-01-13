@@ -15,6 +15,16 @@ on:
         description: 'service name'
         required: true
         type: string
+      delete_terraform:
+        description: 'delete with terraform'
+        default: true
+        required: false
+        type: boolean
+      delete_aws:
+        description: 'delete with aws'
+        default: true
+        required: false
+        type: boolean
 
     secrets:
       tf_api_token:
@@ -43,6 +53,7 @@ env:
 jobs:
   delete:
     runs-on: ubuntu-latest
+    if: ${{ inputs.delete_terraform }}
     permissions:
       contents: read
     steps:

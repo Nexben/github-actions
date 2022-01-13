@@ -20,6 +20,16 @@ on:
         description: 'service name'
         required: true
         type: string
+      deploy_terraform:
+        description: 'deploy with terraform'
+        default: true
+        required: false
+        type: boolean
+      deploy_aws:
+        description: 'deploy with aws'
+        default: true
+        required: false
+        type: boolean
 
     secrets:
       tf_api_token:
@@ -54,6 +64,7 @@ jobs:
 
   terraform-deploy:
     runs-on: ubuntu-latest
+    if: ${{ inputs.deploy_terraform }}
     permissions:
       contents: read
     env:
@@ -137,6 +148,7 @@ jobs:
 
   aws-deploy:
     runs-on: ubuntu-latest
+    if: ${{ inputs.deploy_aws }}
     continue-on-error: true
     steps:
       - name: Configure AWS credentials
