@@ -150,14 +150,24 @@ jobs:
         run: |
           export AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
           export APP_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
+          echo "AWS_TOOLS_PIPELINE_NAME = $AWS_TOOLS_PIPELINE_NAME"
           export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $AWS_TOOLS_PIPELINE_NAME | jq -r ".pipelineExecutionId")
           echo "PIPELINE_EXECUTION_ID = $PIPELINE_EXECUTION_ID"
-          echo "AWS_TOOLS_PIPELINE_NAME = $AWS_TOOLS_PIPELINE_NAME"
-          echo "PIPELINE_IMAGE_TAG = $APP_TAG"
-          echo "PIPELINE_STAGE = ${{ inputs.branch_name }}"
+          export PIPELINE_IMAGE_TAG="$APP_TAG"
+          export PIPELINE_STAGE="${{ inputs.branch_name }}""
+          export PIPELINE_GITHUB_WORKFLOW="${GITHUB_WORKFLOW}"
+          export PIPELINE_GITHUB_JOB="${GITHUB_JOB}"
+          export PIPELINE_GITHUB_ACTOR="${GITHUB_ACTOR}"
+          export PIPELINE_GITHUB_SHA="${GITHUB_SHA}"
+          export PIPELINE_GITHUB_EVENT_NAME="${GITHUB_EVENT_NAME}"
+          export PIPELINE_GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
+          export PIPELINE_GITHUB_REF_NAME="${GITHUB_REF_NAME}"
+          export PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
+          env | grep "PIPELINE_"
+          export PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
           aws dynamodb put-item \
-          --table-name ${{ secrets.pipeline_table_name }} \
-          --item '{"pipelineExecutionId":{"S":"'"$PIPELINE_EXECUTION_ID"'"},"parameters":{"S":"{\"PIPELINE_STAGE\":\"${{ inputs.branch_name }}\",\"PIPELINE_IMAGE_TAG\":\"'"$APP_TAG"'\"}"}}'
+            --table-name ${{ secrets.AWS_TOOLS_PIPELINE_EXECUTIONS_TABLE_NAME }} \
+            --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
 
   slack:
     if: always()
