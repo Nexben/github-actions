@@ -166,7 +166,7 @@ jobs:
           env | grep "PIPELINE_"
           export PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
           aws dynamodb put-item \
-            --table-name ${{ secrets.AWS_TOOLS_PIPELINE_EXECUTIONS_TABLE_NAME }} \
+            --table-name ${{ secrets.pipeline_table_name }} \
             --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
 
   slack:
