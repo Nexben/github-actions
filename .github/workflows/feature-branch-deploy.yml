@@ -193,6 +193,8 @@ jobs:
           PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
           env | grep "PIPELINE_"
           PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
+          echo "PIPELINE_DATA = ${PIPELINE_DATA}"
+          echo "EXECUTIONS_TABLE_NAME = ${EXECUTIONS_TABLE_NAME}"
           aws dynamodb put-item \
             --table-name "${EXECUTIONS_TABLE_NAME}" \
             --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
