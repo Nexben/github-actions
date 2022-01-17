@@ -162,11 +162,11 @@ jobs:
         run: |
           AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
 
-          if [ "${{ needs.vars.outputs.app_branch }}" = 'dev' ]; then
+          if [ "${{ inputs.branch_name }}" = 'dev' ]; then
             PIPELINE_STAGE="default"
             AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
           else
-            PIPELINE_STAGE="${{ needs.vars.outputs.app_branch }}"
+            PIPELINE_STAGE="${{ inputs.branch_name }}"
             AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}-sandbox"
           fi
 
