@@ -175,6 +175,7 @@ jobs:
             EXECUTIONS_TABLE_NAME="${{ secrets.sandbox_table_name }}"
           fi
 
+          echo "EXECUTIONS_TABLE_NAME = ${EXECUTIONS_TABLE_NAME}"
           APP_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
           echo "AWS_TOOLS_PIPELINE_NAME = ${AWS_TOOLS_PIPELINE_NAME}"
           PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $AWS_TOOLS_PIPELINE_NAME | jq -r ".pipelineExecutionId")
@@ -191,10 +192,7 @@ jobs:
           PIPELINE_GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
           PIPELINE_GITHUB_REF_NAME="${GITHUB_REF_NAME}"
           PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
-          env | grep "PIPELINE_"
           PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
-          echo "PIPELINE_DATA = ${PIPELINE_DATA}"
-          echo "EXECUTIONS_TABLE_NAME = ${EXECUTIONS_TABLE_NAME}"
           aws dynamodb put-item \
             --table-name "${EXECUTIONS_TABLE_NAME}" \
             --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
