@@ -162,8 +162,12 @@ jobs:
         run: |
           AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
 
-          if [ ${{ inputs.branch_name }} f= 'default' ]; then
-            AWS_TOOLS_PIPELINE_NAME="${AWS_TOOLS_PIPELINE_NAME}-sandbox"
+          if [ "${{ needs.vars.outputs.app_branch }}" = 'dev' ]; then
+            PIPELINE_STAGE="default"
+          AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
+          else
+            PIPELINE_STAGE="${{ needs.vars.outputs.app_branch }}"
+            AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}-sandbox"
           fi
 
           APP_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
