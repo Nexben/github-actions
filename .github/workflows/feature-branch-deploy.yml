@@ -177,7 +177,7 @@ jobs:
 
           echo "EXECUTIONS_TABLE_NAME = ${EXECUTIONS_TABLE_NAME}"
           APP_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
-          echo "AWS_TOOLS_PIPELINE_NAME = ${AWS_TOOLS_PIPELINE_NAME}"
+          echo "AWS_TOOLS_PIPELINE_NAME = ${AWS_TOLS_PIPELINE_NAME}"
           PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $AWS_TOOLS_PIPELINE_NAME | jq -r ".pipelineExecutionId")
           echo "PIPELINE_EXECUTION_ID = ${PIPELINE_EXECUTION_ID}"
           PIPELINE_IMAGE_TAG="${APP_TAG}"
@@ -192,7 +192,7 @@ jobs:
           PIPELINE_GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
           PIPELINE_GITHUB_REF_NAME="${GITHUB_REF_NAME}"
           PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
-          PIPELINE_GITHUB_COMMIT_MESSAGE=${${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}//[$'\t\r\n\'']}
+          PIPELINE_GITHUB_COMMIT_MESSAGE=${${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}//[$"\t\r\n'"]}
           PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
           aws dynamodb put-item \
             --table-name "${EXECUTIONS_TABLE_NAME}" \
