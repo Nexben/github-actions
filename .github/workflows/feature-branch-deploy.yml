@@ -163,50 +163,39 @@ jobs:
 
       - name: Start AWS Pipeline
         run: |
-          export AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
+          export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
 
           if [ "${{ inputs.branch_name }}" = 'dev' ]; then
             export PIPELINE_STAGE="default"
-            export AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
-            export EXECUTIONS_TABLE_NAME="${{ secrets.pipeline_table_name }}"
+            export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
+            export PIPELINE_EXECUTIONS_TABLE="${{ secrets.pipeline_table_name }}"
           else
             export PIPELINE_STAGE="${{ inputs.branch_name }}"
-            export AWS_TOOLS_PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}-sandbox"
-            export EXECUTIONS_TABLE_NAME="${{ secrets.sandbox_table_name }}"
+            export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}-sandbox"
+            export PIPELINE_EXECUTIONS_TABLE="${{ secrets.sandbox_table_name }}"
           fi
 
-          echo "EXECUTIONS_TABLE_NAME = ${EXECUTIONS_TABLE_NAME}"
-          export APP_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
-          echo "AWS_TOOLS_PIPELINE_NAME = ${AWS_TOLS_PIPELINE_NAME}"
-          export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $AWS_TOOLS_PIPELINE_NAME | jq -r ".pipelineExecutionId")
-          echo "PIPELINE_EXECUTION_ID = ${PIPELINE_EXECUTION_ID}"
-          export PIPELINE_IMAGE_TAG="${APP_TAG}"
-          echo "PIPELINE_IMAGE_TAG = ${PIPELINE_IMAGE_TAG}"
+          export PIPELINE_IMAGE_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
+          export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r ".pipelineExecutionId")
           export PIPELINE_STAGE="${{ inputs.branch_name }}"
-          echo "PIPELINE_STAGE = ${PIPELINE_STAGE}"
           export PIPELINE_GITHUB_WORKFLOW="${GITHUB_WORKFLOW}"
-          echo "PIPELINE_STAGE = ${PIPELINE_STAGE}"
           export PIPELINE_GITHUB_JOB="${GITHUB_JOB}"
-          echo "PIPELINE_GITHUB_JOB = ${PIPELINE_GITHUB_JOB}"
           export PIPELINE_GITHUB_ACTOR="${GITHUB_ACTOR}"
-          echo "PIPELINE_GITHUB_ACTOR = ${GITHUB_ACTOR}"
           export PIPELINE_GITHUB_SHA="${GITHUB_SHA}"
-          echo "PIPELINE_GITHUB_SHA = ${PIPELINE_GITHUB_SHA}"
           export PIPELINE_GITHUB_EVENT_NAME="${GITHUB_EVENT_NAME}"
-          echo "PIPELINE_GITHUB_EVENT_NAME = ${PIPELINE_GITHUB_EVENT_NAME}"
           export PIPELINE_GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
-          echo "PIPELINE_GITHUB_REPOSITORY = ${PIPELINE_GITHUB_REPOSITORY}"
           export PIPELINE_GITHUB_REF_NAME="${GITHUB_REF_NAME}"
-          echo "PIPELINE_GITHUB_REF_NAME = ${PIPELINE_GITHUB_REF_NAME}"
           export PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
           export PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}"
           export PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE//[$'\t\r\n\'']}"
-          echo "PIPELINE_GITHUB_COMMIT_MESSAGE = ${PIPELINE_GITHUB_COMMIT_MESSAGE}"
+
           echo "$(env | grep 'PIPELINE_')"
+
           export PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
           echo "PIPELINE_DATA = ${PIPELINE_DATA}"
+
           aws dynamodb put-item \
-            --table-name "${EXECUTIONS_TABLE_NAME}" \
+            --table-name "${PIPELINE_EXECUTIONS_TABLE}" \
             --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
 
   slack:
