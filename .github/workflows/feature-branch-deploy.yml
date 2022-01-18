@@ -185,16 +185,26 @@ jobs:
           PIPELINE_STAGE="${{ inputs.branch_name }}"
           echo "PIPELINE_STAGE = ${PIPELINE_STAGE}"
           PIPELINE_GITHUB_WORKFLOW="${GITHUB_WORKFLOW}"
+          echo "PIPELINE_STAGE = ${PIPELINE_STAGE}"
           PIPELINE_GITHUB_JOB="${GITHUB_JOB}"
+          echo "PIPELINE_GITHUB_JOB = ${PIPELINE_GITHUB_JOB}"
           PIPELINE_GITHUB_ACTOR="${GITHUB_ACTOR}"
+          echo "PIPELINE_GITHUB_ACTOR = ${GITHUB_ACTOR}"
           PIPELINE_GITHUB_SHA="${GITHUB_SHA}"
+          echo "PIPELINE_GITHUB_SHA = ${PIPELINE_GITHUB_SHA}"
           PIPELINE_GITHUB_EVENT_NAME="${GITHUB_EVENT_NAME}"
+          echo "PIPELINE_GITHUB_EVENT_NAME = ${PIPELINE_GITHUB_EVENT_NAME}"
           PIPELINE_GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
+          echo "PIPELINE_GITHUB_REPOSITORY = ${PIPELINE_GITHUB_REPOSITORY}"
           PIPELINE_GITHUB_REF_NAME="${GITHUB_REF_NAME}"
+          echo "PIPELINE_GITHUB_REF_NAME = ${PIPELINE_GITHUB_REF_NAME}"
           PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
           PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}"
           PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE//[$'\t\r\n\'']}"
+          echo "PIPELINE_GITHUB_COMMIT_MESSAGE = ${PIPELINE_GITHUB_COMMIT_MESSAGE}"
+          echo "$(env | grep 'PIPELINE_'"
           PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
+          echo "PIPELINE_DATA = ${PIPELINE_DATA}"
           aws dynamodb put-item \
             --table-name "${EXECUTIONS_TABLE_NAME}" \
             --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
