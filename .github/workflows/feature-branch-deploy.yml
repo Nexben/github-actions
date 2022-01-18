@@ -177,7 +177,6 @@ jobs:
 
           export PIPELINE_IMAGE_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
           export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r ".pipelineExecutionId")
-          export PIPELINE_STAGE="${{ inputs.branch_name }}"
           export PIPELINE_GITHUB_WORKFLOW="${GITHUB_WORKFLOW}"
           export PIPELINE_GITHUB_JOB="${GITHUB_JOB}"
           export PIPELINE_GITHUB_ACTOR="${GITHUB_ACTOR}"
