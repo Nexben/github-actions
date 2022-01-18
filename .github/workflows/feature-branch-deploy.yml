@@ -192,7 +192,7 @@ jobs:
           PIPELINE_GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
           PIPELINE_GITHUB_REF_NAME="${GITHUB_REF_NAME}"
           PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
-          PIPELINE_GITHUB_COMMIT_MESSAGE=${${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}//[$"\t\r\n'"]}
+          PIPELINE_GITHUB_COMMIT_MESSAGE=${${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}//[$'\t\r\n']}
           PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
           aws dynamodb put-item \
             --table-name "${EXECUTIONS_TABLE_NAME}" \
