@@ -202,7 +202,7 @@ jobs:
           PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}"
           PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE//[$'\t\r\n\'']}"
           echo "PIPELINE_GITHUB_COMMIT_MESSAGE = ${PIPELINE_GITHUB_COMMIT_MESSAGE}"
-          echo "$(env | grep 'PIPELINE_'"
+          echo "$(env | grep 'PIPELINE_')"
           PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
           echo "PIPELINE_DATA = ${PIPELINE_DATA}"
           aws dynamodb put-item \
