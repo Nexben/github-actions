@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [aws-deploy]
     env:
-      SLACK_USER: "${{ github.repository }}[${{ needs.vars.outputs.app_branch }}]"
+      SLACK_USER: "${{ github.repository }}[${{ inputs.branch_name }}]"
     steps:
       - name: Notify Deployed
         run: |
@@ -97,4 +97,4 @@ jobs:
             -X POST \
             -H 'content-type: application/json' \
               "${{secrets.slack_webhook}}" \
-            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deployed ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deployed ${{ inputs.tag_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
