@@ -16,108 +16,85 @@ on:
         default: 'dev'
         required: false
         type: string
-    secrets:
-      tf_api_token:
-        description: 'trerraform access token'
+      service_name:
+        description: 'service name'
         required: true
+        type: string
+
+    secrets:
       slack_webhook:
         description: 'slack webhook url'
         required: false
+      aws_access_key_id:
+        description: 'aws access key id'
+        required: true
+      aws_secret_access_key:
+        description: 'aws secret access key'
+        required: true
+      aws_region:
+        description: 'aws region'
+        required: true
+      pipeline_table_name:
+        description: 'table to store pipeline executions'
+        required: true
 
 jobs:
-  deploy:
+  aws-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    env:
-      TF_WORKSPACE: dev
-
     steps:
-
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          fetch-depth: 0
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: ${{ secrets.aws_region }}
 
-      - name: Check branch
-        id: test
-        continue-on-error: true
+      - name: Start AWS Pipeline
         run: |
-          echo "::set-output name=tag::dev"
-          branch_name=$(git show-ref feature/${{ inputs.branch_name }});
-          if [ -n "$branch_name" ]; then
-            echo "::set-output name=tag::${{ inputs.branch_name }}"
+          export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
+
+          if [ "${{ inputs.branch_name }}" = 'dev' ]; then
+            export PIPELINE_STAGE="default"
+            export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
+          else
+            export PIPELINE_STAGE="${{ inputs.branch_name }}"
+            export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}-sandbox"
           fi
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          cli_config_credentials_token: ${{ secrets.tf_api_token }}
-          terraform_wrapper: false
-          terraform_version: "~1.0"
+          export PIPELINE_EXECUTIONS_TABLE="${{ secrets.pipeline_table_name }}"
+          export PIPELINE_IMAGE_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.branch_name }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
+          export PIPELINE_IMAGE_TAG=${PIPELINE_IMAGE_TAG:-dev}
+          export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r ".pipelineExecutionId")
+          export PIPELINE_GITHUB_WORKFLOW="${GITHUB_WORKFLOW}"
+          export PIPELINE_GITHUB_JOB="${GITHUB_JOB}"
+          export PIPELINE_GITHUB_ACTOR="${GITHUB_ACTOR}"
+          export PIPELINE_GITHUB_SHA="${GITHUB_SHA}"
+          export PIPELINE_GITHUB_EVENT_NAME="${GITHUB_EVENT_NAME}"
+          export PIPELINE_GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
+          export PIPELINE_GITHUB_REF_NAME="${GITHUB_REF_NAME}"
+          export PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
+          export PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}"
+          export PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE//[$'\t\r\n\'']}"
 
-      - name: Terraform Format
-        run: terraform fmt -check
-        working-directory: iac
+          echo "$(env | grep 'PIPELINE_')"
 
-      - name: Cache Terraform
-        uses: actions/cache@v2
-        with:
-          path: iac/.terraform
-          key: ${{ hashFiles('iac/.terraform.lock.hcl') }}
+          export PIPELINE_DATA=$(jq -n -c '$ENV | with_entries(if (.key|test("PIPELINE_")) then ( {key: .key, value: .value } ) else empty end ) | tojson')
+          echo "PIPELINE_DATA = ${PIPELINE_DATA}"
 
-      - name: Set vars
-        id: vars
-        run: |
+          aws dynamodb put-item \
+            --table-name "${PIPELINE_EXECUTIONS_TABLE}" \
+            --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
 
-          APP_BRANCH=${{ inputs.branch_name }}
-          PARAM_SPACE="dev"
-
-          if [ APP_BRANCH = 'stage' ]; then
-            PARAM_SPACE="dev"
-          elif [ APP_BRANCH = 'master' ]; then
-            PARAM_SPACE="dev"
-          fi
-
-          echo "APP_TAG     = ${{steps.test.outputs.tag}}"
-          echo "APP_BRANCH  = $APP_BRANCH"
-          echo "PARAM_SPACE = $PARAM_SPACE"
-
-          echo "::set-output name=app_branch::$APP_BRANCH"
-          echo "::set-output name=param_space::$PARAM_SPACE"
-
-      - name: Terraform Init
-        run: |
-          echo  "tag          =\"${{steps.test.outputs.tag}}\""  >  terraform.auto.tfvars
-          echo  "app_branch  =\"${{steps.vars.outputs.app_branch}}\""  >>  terraform.auto.tfvars
-          echo  "param_space  =\"${{steps.vars.outputs.param_space}}\""  >>  terraform.auto.tfvars
-          terraform init -migrate-state
-          unset TF_WORKSPACE
-          terraform workspace select dev
-          terraform workspace select ${{steps.vars.outputs.app_branch}} || terraform workspace new ${{steps.vars.outputs.app_branch}}
-          terraform init
-        working-directory: iac
-
-      - name: Terraform Validate
-        run: terraform validate
-        working-directory: iac
-
-      - name: Terraform Apply
-        env:
-          TF_WORKSPACE: ${{steps.vars.outputs.app_branch}}
-          TF_VAR_app_branch: ${{steps.vars.outputs.app_branch}}
-          TF_VAR_tag: ${{steps.vars.outputs.tag}}
-
-        run: terraform apply -auto-approve
-        working-directory: iac
-
-      - name: Slack Notification
-        env:
-          SLACK_USER: "${{ github.repository }}[${{ steps.vars.outputs.app_branch }}]"
+  slack:
+    runs-on: ubuntu-latest
+    needs: [aws-deploy]
+    env:
+      SLACK_USER: "${{ github.repository }}[${{ inputs.branch_name }}]"
+    steps:
+      - name: Notify Deployed
         run: |
           curl -fsS \
             -X POST \
             -H 'content-type: application/json' \
-             "${{secrets.slack_webhook}}" \
-            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER"'", "text": "Feature branch service deployed ${{ needs.vars.outputs.app_release }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
-
+              "${{secrets.slack_webhook}}" \
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER-$GITHUB_ACTOR"'", "text": "Feature branch pipeline triggered ${{ inputs.tag_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
