@@ -1,4 +1,4 @@
-name: Feature branch Deploy
+name: Sandbox Deploy
 
 on:
   workflow_call:
@@ -97,4 +97,4 @@ jobs:
             -X POST \
             -H 'content-type: application/json' \
               "${{secrets.slack_webhook}}" \
-            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER-$GITHUB_ACTOR"'", "text": "Feature branch pipeline triggered ${{ inputs.tag_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER-$GITHUB_ACTOR"'", "text": "Sandbox pipeline triggered ${{ inputs.tag_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
