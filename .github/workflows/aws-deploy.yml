@@ -1,4 +1,4 @@
-name: Sandbox Deploy
+name: AWS Deploy
 
 on:
   workflow_call:
@@ -39,7 +39,7 @@ on:
         required: true
 
 jobs:
-  aws-deploy:
+  start-aws-pipeline:
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -97,4 +97,4 @@ jobs:
             -X POST \
             -H 'content-type: application/json' \
               "${{secrets.slack_webhook}}" \
-            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER-$GITHUB_ACTOR"'", "text": "Sandbox pipeline triggered ${{ inputs.tag_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER-$GITHUB_ACTOR"'", "text": "AWS pipeline started ${{ inputs.tag_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
