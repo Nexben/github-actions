@@ -87,7 +87,7 @@ jobs:
 
   slack:
     runs-on: ubuntu-latest
-    needs: [aws-deploy]
+    needs: [start-aws-pipeline]
     env:
       SLACK_USER: "${{ github.repository }}[${{ inputs.branch_name }}]"
     steps:
