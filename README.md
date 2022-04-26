@@ -1,5 +1,5 @@
 # Github Actions Repo
-This repo is designed to house github actions that we use in our workflows.  It is currently public due do a limitation in how repositories can reference actions in other repos.  This is fixed as of 1/21/22 see [Share GitHub Actions within your enterprise](https://github.blog/changelog/2022-01-21-share-github-actions-within-your-enterprise/ "Share GitHub Actions within your enterprise") so the repo will be taken private soon but in the meantime be careful what info you're adding to the repo.
+This repo is designed to house github actions that we use in our workflows.  It has been moved from public to private.
 
 # Versioning
 In order to make it easier to add, update, and use these actions, we are using branches for versioning.  An action is ferred to via it's full path and version, eg `Nexben/github-actions/.github/workflows/feature-branch-deploy.yml@v4`.  This would reference the action 'feature-branch-deploy' version 4 in the repo 'Nexben/github-actions'
