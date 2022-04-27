@@ -20,6 +20,12 @@ on:
         description: 'service name'
         required: true
         type: string
+      pr_labels:
+        description: 'github pull request labels'
+        required: false
+        default: 'deploy-sandbox'
+        type: string
+
 
     secrets:
       slack_webhook:
@@ -75,6 +81,7 @@ jobs:
           export PIPELINE_GITHUB_COMMIT_MESSAGE="${{ github.event.commits[0].message }}"
           export PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE:0:100}"
           export PIPELINE_GITHUB_COMMIT_MESSAGE="${PIPELINE_GITHUB_COMMIT_MESSAGE//[$'\t\r\n\'']}"
+          export PIPELINE_GITHUB_PR_LABELS="${{ inputs.pr_labels }}"
 
           echo "$(env | grep 'PIPELINE_')"
 
