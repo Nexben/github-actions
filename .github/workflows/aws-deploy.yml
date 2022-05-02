@@ -64,6 +64,7 @@ jobs:
             export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
           else
             export PIPELINE_STAGE="${{ inputs.branch_name }}"
+            export PIPELINE_STAGE="${PIPELINE_STAGE:0:25}"
             export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}-sandbox"
           fi
 
@@ -91,6 +92,8 @@ jobs:
           aws dynamodb put-item \
             --table-name "${PIPELINE_EXECUTIONS_TABLE}" \
             --item '{"pipelineExecutionId":{"S":"'"${PIPELINE_EXECUTION_ID}"'"},"parameters":{"S":'"${PIPELINE_DATA}"'}}'
+
+          echo "When all pipelines complete, app will be available at https://${PIPELINE_STAGE}-app.dev.nexben.net"
 
   slack:
     runs-on: ubuntu-latest
