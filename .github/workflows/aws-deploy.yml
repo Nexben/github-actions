@@ -3,8 +3,8 @@ name: AWS Deploy
 on:
   workflow_call:
     inputs:
-      sandbox_description:
-        description: 'Description of sandbox'
+      deployment_description:
+        description: 'Description of deployment'
         required: false
         type: string
       repository_name:
@@ -95,9 +95,9 @@ jobs:
           export PIPELINE_IMAGE_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.ref_slug }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
           export PIPELINE_IMAGE_TAG=${PIPELINE_IMAGE_TAG:-dev}
           export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r ".pipelineExecutionId")
-          export PIPELINE_SANDBOX_DESCRIPTION="${{ inputs.sandbox_description }}"
-          export PIPELINE_SANDBOX_DESCRIPTION="${ PIPELINE_SANDBOX_DESCRIPTION:0:100 }"
-          export PIPELINE_SANDBOX_DESCRIPTION="${PIPELINE_SANDBOX_DESCRIPTION//[$'\t\r\n\'']}"
+          export PIPELINE_DEPLOYMENT_DESCRIPTION="${{ inputs.deployment_description }}"
+          export PIPELINE_DEPLOYMENT_DESCRIPTION="${ PIPELINE_DEPLOYMENT_DESCRIPTION:0:100 }"
+          export PIPELINE_DEPLOYMENT_DESCRIPTION="${PIPELINE_DEPLOYMENT_DESCRIPTION//[$'\t\r\n\'']}"
           export PIPELINE_GITHUB_REPOSITORY_NAME="${{ inputs.repository_name }}"
           export PIPELINE_GITHUB_BRANCH_NAME="${{ inputs.branch_name }"
           export PIPELINE_GITHUB_USER="${{ inputs.user }}"
