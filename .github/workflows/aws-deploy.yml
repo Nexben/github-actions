@@ -43,12 +43,6 @@ on:
         description: 'service name'
         required: false
         type: string
-      tag_name:
-        description: 'name tag to deploy'
-        default: 'dev'
-        required: false
-        type: string
-
 
     secrets:
       slack_webhook:
@@ -107,8 +101,6 @@ jobs:
           export PIPELINE_GITHUB_PR_NUMBER="${{ inputs.pr_number }}"
           export PIPELINE_GITHUB_PR_LABELS="${{ inputs.pr_labels }}"
           export PIPELINE_SERVICE_NAME="${{ inputs.service_name }}"
-          export PIPELINE_TAG_NAME="${{ inputs.tag_name }}"
-
 
           echo "$(env | grep 'PIPELINE_')"
 
@@ -133,4 +125,4 @@ jobs:
             -X POST \
             -H 'content-type: application/json' \
               "${{secrets.slack_webhook}}" \
-            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER-$GITHUB_ACTOR"'", "text": "AWS pipeline started ${{ inputs.tag_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
+            -d '{"channel": "#ci-cd", "username": "'"$SLACK_USER-$GITHUB_ACTOR"'", "text": "AWS pipeline started ${{ inputs.branch_name }}\n<${{ github.server_url }}/${{ inputs.repository_name }}/actions/>", "icon_emoji": ":triangular_flag_on_post:"}'
