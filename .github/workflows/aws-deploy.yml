@@ -90,7 +90,7 @@ jobs:
           export PIPELINE_IMAGE_TAG=${PIPELINE_IMAGE_TAG:-dev}
           export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r ".pipelineExecutionId")
           export PIPELINE_DEPLOYMENT_DESCRIPTION="${{ inputs.deployment_description }}"
-          export PIPELINE_DEPLOYMENT_DESCRIPTION="${ PIPELINE_DEPLOYMENT_DESCRIPTION:0:100 }"
+          export PIPELINE_DEPLOYMENT_DESCRIPTION="${PIPELINE_DEPLOYMENT_DESCRIPTION:0:100}"
           export PIPELINE_DEPLOYMENT_DESCRIPTION="${PIPELINE_DEPLOYMENT_DESCRIPTION//[$'\t\r\n\'']}"
           export PIPELINE_GITHUB_REPOSITORY_NAME="${{ inputs.repository_name }}"
           export PIPELINE_GITHUB_BRANCH_NAME="${{ inputs.branch_name }}"
