@@ -76,7 +76,7 @@ jobs:
         run: |
           export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
 
-          if [ ":master:main:}" = '*:${{ inputs.branch_name }}:*' ]; then
+          if [[ ":master:main:" == '*:${{ inputs.branch_name }}:*' ]]; then
             export PIPELINE_STAGE="default"
             export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}"
           else
