@@ -98,7 +98,7 @@ jobs:
 
           export PIPELINE_EXECUTIONS_TABLE="${{ secrets.pipeline_table_name }}"
           export PIPELINE_IMAGE_TAG=$(aws ssm get-parameter --name "/services-tags/${{ inputs.ref_slug }}/${{ inputs.service_name }}" | jq -r ".Parameter.Value")
-          export PIPELINE_IMAGE_TAG=${PIPELINE_IMAGE_TAG:-dev}
+          export PIPELINE_IMAGE_TAG=${PIPELINE_IMAGE_TAG:-master}
           export PIPELINE_EXECUTION_ID=$(aws codepipeline start-pipeline-execution --name $PIPELINE_NAME | jq -r ".pipelineExecutionId")
           export PIPELINE_DEPLOYMENT_DESCRIPTION="${{ inputs.deployment_description }}"
           export PIPELINE_DEPLOYMENT_DESCRIPTION="${PIPELINE_DEPLOYMENT_DESCRIPTION:0:100}"
