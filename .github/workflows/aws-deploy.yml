@@ -90,7 +90,7 @@ jobs:
 
             *)
               export PIPELINE_STAGE="${{ inputs.ref_slug }}"
-              export PIPELINE_STAGE="${PIPELINE_STAGE:0:15}"
+              export PIPELINE_STAGE="${PIPELINE_STAGE:0:25}"
               export PIPELINE_NAME="default-cicd-nxb-apps-${{ inputs.service_name }}-sandbox"
               ;;
 
